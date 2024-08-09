@@ -10,6 +10,7 @@ import SessionSendTransactionModal from '@/modals/SessionSendTransactionModal';
 import SessionSignTypedDataModal from '@/modals/SessionSignTypedDataModal';
 import {LoadingModal} from '@/modals/LoadingModal';
 import SessionAuthenticateModal from '@/modals/SessionAuthenticateModal';
+import SettingsStore from '@/store/SettingsStore';
 
 export default function Modal() {
   const {open, view} = useSnapshot(ModalStore.state);
@@ -17,6 +18,7 @@ export default function Modal() {
   const onClose = useCallback(() => {
     if (open) {
       ModalStore.close();
+      SettingsStore.setCurrentRequestLinkMode(false);
     }
   }, [open]);
 
@@ -43,6 +45,9 @@ export default function Modal() {
     <RNModal
       backdropOpacity={0.6}
       hideModalContentWhileAnimating
+      useNativeDriver
+      statusBarTranslucent
+      propagateSwipe
       onBackdropPress={onClose}
       onModalHide={onClose}
       style={styles.modal}

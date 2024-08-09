@@ -12,7 +12,7 @@ import ModalStore from '@/store/ModalStore';
 import {eip155Addresses, eip155Wallets} from '@/utils/EIP155WalletUtil';
 import {web3wallet} from '@/utils/WalletConnectUtil';
 import SettingsStore from '@/store/SettingsStore';
-import {handleDeepLinkRedirect} from '@/utils/LinkingUtils';
+import {handleRedirect} from '@/utils/LinkingUtils';
 import {useTheme} from '@/hooks/useTheme';
 
 import {EIP155_CHAINS, EIP155_SIGNING_METHODS} from '@/utils/PresetsUtil';
@@ -22,9 +22,9 @@ import {Message} from '@/components/Modal/Message';
 export default function SessionAuthenticateModal() {
   const Theme = useTheme();
 
-  const data = useSnapshot(ModalStore.state);
-  const authRequest = data?.data
-    ?.authRequest as SignClientTypes.EventArguments['session_authenticate'];
+  const {data} = useSnapshot(ModalStore.state);
+  const authRequest =
+    data?.authRequest as SignClientTypes.EventArguments['session_authenticate'];
 
   const {account} = useSnapshot(SettingsStore.state);
   const [messages, setMessages] = useState<
@@ -80,9 +80,11 @@ export default function SessionAuthenticateModal() {
         SettingsStore.setSessions(
           Object.values(web3wallet.getActiveSessions()),
         );
-        handleDeepLinkRedirect(
-          authRequest.params.requester?.metadata?.redirect,
-        );
+
+        handleRedirect({
+          peerRedirect: authRequest.params.requester?.metadata?.redirect,
+          isLinkMode: SettingsStore.state.isCurrentRequestLinkMode,
+        });
       } catch (e) {
         console.log((e as Error).message, 'error');
         return;
@@ -149,7 +151,7 @@ export default function SessionAuthenticateModal() {
       rejectLoader={isLoadingReject}>
       <View style={[styles.divider, {backgroundColor: Theme['bg-300']}]} />
       <View style={styles.container}>
-        <Text>{`Messages to sign (${messages.length})`}</Text>
+        <Text>{`Messages to sign (${messages?.length})`}</Text>
         <Message
           showTitle={false}
           message={messages.map(m => `${m.message}\n\n`).toString()}
@@ -172,6 +174,6 @@ const styles = StyleSheet.create({
     rowGap: 8,
   },
   messageContainer: {
-    maxHeight: 400,
+    maxHeight: 250,
   },
 });
